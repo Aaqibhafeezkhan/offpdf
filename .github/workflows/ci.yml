@@ -101,3 +101,32 @@ jobs:
             echo "::error::Rust tests skipped because a PDF engine was missing"
             exit 1
           fi
+
+  windows-rust-link:
+    name: Windows Rust test link
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Use stable Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build frontend assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Stage qpdf and Windows runtime DLLs
+        shell: pwsh
+        run: ./scripts/prepare-qpdf-windows.ps1
+
+      - name: Link Rust test binary
+        run: cargo test --locked --manifest-path src-tauri/Cargo.toml --lib --no-run

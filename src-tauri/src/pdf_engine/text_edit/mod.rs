@@ -70,7 +70,9 @@ pub(crate) mod export;
 pub(crate) mod service;
 
 // Tests and test helpers
-#[cfg(test)]
+// The benchmark's peak-RSS probe uses the Unix getrusage ABI. Do not link it
+// into the Windows test binary; the product and all other tests still build.
+#[cfg(all(test, unix))]
 pub(crate) mod bench;
 #[cfg(test)]
 pub(crate) mod testkit;
