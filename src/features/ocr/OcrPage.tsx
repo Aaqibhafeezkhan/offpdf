@@ -15,7 +15,7 @@ import {
 } from "@/components/pdf";
 import { useJob, JobStatus, useDiskGuard } from "@/components/jobs";
 import { ocrPdf, ocrAvailable, ocrListLangs } from "@/lib/tauriCommands";
-import { documentOcrLangs, joinOcrLangs, ocrLangLabel } from "@/lib/ocrLangs";
+import { documentOcrLangs, joinOcrLangs, ocrLangLabel, restoreDocumentOcrLangs } from "@/lib/ocrLangs";
 import { getTool } from "@/lib/tools";
 import { toAppError } from "@/lib/types";
 import { estimateRequiredBytes, validateOutputName, joinPath } from "@/lib/validation";
@@ -33,6 +33,8 @@ export function OcrPage() {
   const { toast } = useToast();
 
   const lastFolder = useSettingsStore((s) => s.lastOutputFolder);
+  const lastOcrLanguages = useSettingsStore((s) => s.lastOcrLanguages);
+  const setLastOcrLanguages = useSettingsStore((s) => s.setLastOcrLanguages);
   const [folder, setFolder] = useState<string | null>(lastFolder);
   const [name, setName] = useState("searchable.pdf");
   const [available, setAvailable] = useState(true);
@@ -62,7 +64,9 @@ export function OcrPage() {
         if (!on) return;
         setInstalled(codes);
         setListError(null);
-        setSelected(documentOcrLangs(codes).includes("eng") ? ["eng"] : []);
+        const restored = restoreDocumentOcrLangs(lastOcrLanguages, codes);
+        setSelected(restored);
+        setLastOcrLanguages(restored);
       })
       .catch((e) => {
         if (!on) return;
@@ -76,7 +80,9 @@ export function OcrPage() {
   }, []);
 
   const toggle = (code: string, on: boolean) => {
-    setSelected((prev) => (on ? [...prev, code] : prev.filter((c) => c !== code)));
+    const next = on ? Array.from(new Set([...selected, code])) : selected.filter((c) => c !== code);
+    setSelected(next);
+    setLastOcrLanguages(next);
   };
 
   const start = async () => {

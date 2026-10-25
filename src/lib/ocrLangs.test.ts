@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   documentOcrLangs,
+  restoreDocumentOcrLangs,
   joinOcrLangs,
   ocrLangLabel,
   pickSearchOcrLang,
@@ -66,5 +67,28 @@ describe("documentOcrLangs", () => {
     expect(documentOcrLangs(["eng", "osd", "tur"])).toEqual(["eng", "tur"]);
     expect(documentOcrLangs(["osd", "equ", "snum"])).toEqual([]);
     expect(documentOcrLangs(["deu", "osd"])).toEqual(["deu"]);
+  });
+});
+
+describe("restoreDocumentOcrLangs", () => {
+  it("restores multiple saved languages that are still installed", () => {
+    expect(
+      restoreDocumentOcrLangs(["tur", "eng", "tur"], ["eng", "tur", "deu", "osd"]),
+    ).toEqual(["tur", "eng"]);
+  });
+
+  it("filters removed languages and utility packs from stale saved values", () => {
+    expect(
+      restoreDocumentOcrLangs(["tur", "deu", "osd", "equ", "snum"], ["eng", "osd", "equ", "snum"]),
+    ).toEqual(["eng"]);
+  });
+
+  it("falls back to the first document language when English is unavailable", () => {
+    expect(restoreDocumentOcrLangs(["removed"], ["osd", "deu", "equ"])).toEqual(["deu"]);
+  });
+
+  it("handles malformed saved values and never selects utility packs", () => {
+    expect(restoreDocumentOcrLangs("eng+osd", ["osd", "equ", "snum"])).toEqual([]);
+    expect(restoreDocumentOcrLangs([null, 42, "snum"], ["osd", "snum"])).toEqual([]);
   });
 });

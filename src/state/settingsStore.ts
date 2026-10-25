@@ -18,6 +18,10 @@ interface SettingsState {
   lastOutputFolder: string | null;
   setLastOutputFolder: (folder: string | null) => void;
 
+  /** Last selected document OCR languages, restored only when still installed. */
+  lastOcrLanguages: string[];
+  setLastOcrLanguages: (languages: string[]) => void;
+
   /** Always true for MVP. The app never goes online. */
   readonly offlineMode: true;
 
@@ -35,6 +39,9 @@ export const useSettingsStore = create<SettingsState>()(
       lastOutputFolder: null,
       setLastOutputFolder: (folder) => set({ lastOutputFolder: folder }),
 
+      lastOcrLanguages: [],
+      setLastOcrLanguages: (languages) => set({ lastOcrLanguages: languages }),
+
       offlineMode: true,
 
       largeFileNoticeDismissed: false,
@@ -47,6 +54,7 @@ export const useSettingsStore = create<SettingsState>()(
       partialize: (state) => ({
         theme: state.theme,
         lastOutputFolder: state.lastOutputFolder,
+        lastOcrLanguages: state.lastOcrLanguages,
         largeFileNoticeDismissed: state.largeFileNoticeDismissed,
       }),
     },

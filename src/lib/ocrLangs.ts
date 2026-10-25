@@ -105,3 +105,15 @@ export function documentOcrLangs(installed: string[]): string[] {
   const skip = new Set(["osd", "equ", "snum"]);
   return installed.filter((code) => !skip.has(code));
 }
+
+/** Restore saved document languages against the currently installed document packs. */
+export function restoreDocumentOcrLangs(saved: unknown, installed: string[]): string[] {
+  const available = documentOcrLangs(installed);
+  if (Array.isArray(saved)) {
+    const restored = Array.from(
+      new Set(saved.filter((code): code is string => typeof code === "string" && available.includes(code))),
+    );
+    if (restored.length > 0) return restored;
+  }
+  return available.includes("eng") ? ["eng"] : available.slice(0, 1);
+}
