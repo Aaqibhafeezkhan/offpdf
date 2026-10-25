@@ -2,6 +2,7 @@
 //! hardening in `tests_io/preflight.rs` and `tests_io/xref.rs`), CON and ENG.
 //! Test IDs appear in test names and assertion messages.
 
+#[path = "tests_io/content_cases.rs"]
 mod con;
 mod eng;
 pub(crate) mod lex;

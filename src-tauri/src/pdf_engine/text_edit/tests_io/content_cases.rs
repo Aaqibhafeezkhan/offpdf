@@ -1,4 +1,4 @@
-//! CON-01…12: page content parts, the joined buffer, qpdf's join rule and ownership.
+//! CON-01…12 tests: page content parts, the joined buffer, qpdf's join rule and ownership.
 
 use crate::pdf_engine::text_edit::content::{
     page_content, part_exclusive, qpdf_join, KidsCounts, PageContent, RefCounts,

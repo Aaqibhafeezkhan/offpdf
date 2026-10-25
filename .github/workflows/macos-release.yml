@@ -113,8 +113,33 @@ jobs:
 
           codesign --verify --strict --verbose=2 "$dmg_path"
           codesign --verify --deep --strict --verbose=2 "$app_path"
-          spctl --assess --type execute --verbose=2 "$app_path"
-          xcrun stapler validate "$app_path"
+
+          # Tauri can log "Stapling app..." even when stapler fails. Require the
+          # ticket on the app inside the actual DMG, not just Apple's Accepted
+          # response for the upload.
+          stapled=false
+          for attempt in 1 2 3 4; do
+            if xcrun stapler validate -v "$app_path"; then
+              stapled=true
+              break
+            fi
+            echo "Stapled app ticket not ready (attempt $attempt/4)." >&2
+            sleep 15
+          done
+          test "$stapled" = true
+
+          # Gatekeeper can lag behind the notarization response. Keep the
+          # assessment mandatory, but allow a short propagation window.
+          accepted=false
+          for attempt in 1 2 3 4; do
+            if spctl --assess --type execute --verbose=2 "$app_path"; then
+              accepted=true
+              break
+            fi
+            echo "Gatekeeper has not accepted the app (attempt $attempt/4)." >&2
+            sleep 15
+          done
+          test "$accepted" = true
 
       - name: Attach verified DMG to draft release
         env:
